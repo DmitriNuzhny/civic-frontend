@@ -1,0 +1,8 @@
+export const XIcon = ({ className }: { className: string }) => (
+  <svg className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M18.9 1.15295H22.582L14.54 10.342L24 22.848H16.595L10.791 15.265L4.157 22.848H0.469L9.069 13.017L0 1.15295H7.593L12.834 8.08395L18.9 1.15295ZM17.607 20.647H19.646L6.482 3.23895H4.292L17.607 20.647Z"
+      fill="#0FE2D4"
+    />
+  </svg>
+);
