@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 const Highlight = () => {
   const highlightsData = [
     { label: "Valuation (FMV)", value: "$31,557,000 (Eqvista, July 2025)" },
@@ -22,18 +26,27 @@ const Highlight = () => {
   ];
   return (
     <div className="flex flex-col">
-      <div className="flex bg-[#FFFFFF0A] rounded-xl px-6 py-3 text-lg text-white">
+      <motion.div
+        className="flex bg-[#FFFFFF0A] rounded-xl px-6 py-3 text-lg text-white"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <p className="flex-1">Details</p>
         <p className="flex-1">Metric</p>
-      </div>
+      </motion.div>
       {highlightsData.map((item, index) => (
-        <div
+        <motion.div
           key={index}
-          className="flex border-[#212A3899] border-b-[1px] px-6 py-3 text-lg text-white"
+          className="flex border-[#212A3899] border-b px-6 py-3 text-lg text-white"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 + index * 0.05 }}
+          whileHover={{ x: 5, backgroundColor: "rgba(255,255,255,0.02)" }}
         >
           <span className="flex-1">{item.label}</span>
           <span className="flex-1">{item.value}</span>
-        </div>
+        </motion.div>
       ))}
     </div>
   );

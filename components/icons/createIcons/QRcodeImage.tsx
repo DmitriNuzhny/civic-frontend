@@ -1,4 +1,49 @@
-export const QRcodeImage = () => { 
+"use client";
+
+import { QRCodeSVG } from "qrcode.react";
+
+interface QRcodeImageProps {
+  value: string;
+  size?: number;
+  level?: "L" | "M" | "Q" | "H";
+  bgColor?: string;
+  fgColor?: string;
+}
+
+export const QRcodeImage = ({
+  value,
+  size = 240,
+  level = "M",
+  bgColor = "#ffffff",
+  fgColor = "#000000",
+}: QRcodeImageProps) => {
+  // Ensure value is provided
+  if (!value) {
+    return (
+      <div className="flex items-center justify-center w-[240px] h-[240px] bg-white dark:bg-[#0D111D] rounded-lg">
+        <span className="text-gray-400 dark:text-gray-600 text-sm">
+          No address provided
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center rounded-lg p-2">
+      <QRCodeSVG
+        value={value}
+        size={size}
+        level={level}
+        bgColor={bgColor}
+        fgColor={fgColor}
+        includeMargin={true}
+      />
+    </div>
+  );
+};
+
+// Legacy static QR code component (kept for backward compatibility if needed)
+export const StaticQRcodeImage = () => {
   return (
     <svg
       width="240"
@@ -628,4 +673,4 @@ export const QRcodeImage = () => {
       </defs>
     </svg>
   );
-}
+};

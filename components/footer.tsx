@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export const Footer = () => {
+export default function Footer() {
   return (
     <div className="max-w-[640px] mx-auto flex justify-between items-center px-8 text-sm">
       <Link
@@ -23,4 +23,4 @@ export const Footer = () => {
       </Link>
     </div>
   );
-};
+}

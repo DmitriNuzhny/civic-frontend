@@ -1,5 +1,8 @@
+"use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { ResponsiveContainer } from "recharts";
 import { LineChart } from "recharts";
 import { CartesianGrid } from "recharts";
@@ -66,54 +69,150 @@ const TokenInformation = () => {
   ];
   return (
     <div className="w-full flex flex-col gap-6">
-      <div className="border-b border-[#384051]">
-        <h2 className="text-[#0FE2D4] text-lg font-semibold border-b border-[#0FE2D4] p-3 inline-block">
+      <motion.div
+        className="border-b border-[#384051]"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <motion.h2
+          className="text-[#0FE2D4] text-lg font-semibold border-b border-[#0FE2D4] p-3 inline-block"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           TOKEN INFORMATION
-        </h2>
-      </div>
+        </motion.h2>
+      </motion.div>
 
-      <div className="flex flex-wrap justify-between">
+      <motion.div
+        className="flex flex-wrap justify-between"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+      >
         {tokenInformationData.map((item, index) => (
-          <div key={index} className="flex flex-col gap-3">
+          <motion.div
+            key={index}
+            className="flex flex-col gap-3"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.3 + index * 0.1 }}
+          >
             <div className="text-[#AAAAAA] text-base">{item.label}</div>
-            <div className="text-4xl font-bold text-white">{item.value}</div>
-          </div>
+            <motion.div
+              className="text-4xl font-bold text-white"
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{
+                duration: 0.5,
+                delay: 0.4 + index * 0.1,
+                type: "spring",
+                stiffness: 200,
+              }}
+            >
+              {item.value}
+            </motion.div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {/* Price Chart Section */}
-      <div className="flex flex-col gap-3">
+      <motion.div
+        className="flex flex-col gap-3"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.9 }}
+      >
         <div className="flex justify-between items-center">
-          <div className="flex flex-col gap-2">
-            <div className="text-5xl font-bold text-white">$ 3.3045</div>
-            <div className="text-white font-semibold text-base">
-              CIVICFORGE <span className="text-[#0FE2D4]">+1.02%</span>
-            </div>
-          </div>
-          <Button
-            onClick={() => router.push("/buytoken")}
-            className="px-6 py-3 bg-[#0FE2D4] text-black rounded font-bold hover:bg-[#0FE2D4]/80 transition-colors"
+          <motion.div
+            className="flex flex-col gap-2"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 1 }}
           >
-            Buy CF Tokens
-          </Button>
+            <motion.div
+              className="text-5xl font-bold text-white"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 1.1 }}
+            >
+              $ 3.3045
+            </motion.div>
+            <motion.div
+              className="text-white font-semibold text-base"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 1.2 }}
+            >
+              CIVICFORGE{" "}
+              <motion.span
+                className="text-[#0FE2D4]"
+                animate={{
+                  scale: [1, 1.1, 1],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                +1.02%
+              </motion.span>
+            </motion.div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 1.1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              onClick={() => router.push("/buy-token")}
+              className="px-6 py-3 bg-[#0FE2D4] text-black rounded font-bold hover:bg-[#0FE2D4]/80 transition-colors shadow-lg shadow-[#0FE2D4]/20 hover:shadow-[#0FE2D4]/40"
+            >
+              Buy CF Tokens
+            </Button>
+          </motion.div>
         </div>
-        <div className="flex">
+        <motion.div
+          className="flex"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.4, delay: 1.2 }}
+        >
           {timeFilterData.map((item, index) => (
-            <button
+            <motion.button
               key={index}
-              className={`text-base px-4 py-1.5 rounded-full font-medium ${
+              className={`text-base px-4 py-1.5 rounded-full font-medium cursor-pointer ${
                 timeFilter === item.value
                   ? "bg-[#0FE2D4] text-[#0D111D]"
                   : "bg-transparent text-white"
               }`}
               onClick={() => setTimeFilter(item.value)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.3,
+                delay: 1.3 + index * 0.05,
+                type: "spring",
+                stiffness: 300,
+              }}
             >
               {item.label}
-            </button>
+            </motion.button>
           ))}
-        </div>
-      </div>
-      <div className="relative h-[400px] w-full">
+        </motion.div>
+      </motion.div>
+      <motion.div
+        className="relative h-[400px] w-full"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 1.4 }}
+      >
         <ResponsiveContainer
           width="100%"
           height="100%"
@@ -193,15 +292,30 @@ const TokenInformation = () => {
           </LineChart>
         </ResponsiveContainer>
         {/* Current Value Box */}
-        <div className="absolute left-2 top-[110px] bg-[#0FE2D4] p-1">
+        <motion.div
+          className="absolute left-2 top-[110px] bg-[#0FE2D4] p-1"
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{
+            duration: 0.5,
+            delay: 1.6,
+            type: "spring",
+            stiffness: 200,
+          }}
+        >
           <span className="text-[#111111] font-semibold text-xl">3.3045</span>
-        </div>
+        </motion.div>
         {/* Percentage Change Indicator */}
-        <div className="absolute top-28 right-4 flex items-center gap-1">
+        <motion.div
+          className="absolute top-28 right-4 flex items-center gap-1"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 1.7 }}
+        >
           <div className="w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-b-[6px] border-b-[#0FE2D4]"></div>
           <span className="text-[#0FE2D4] font-semibold text-sm">+ 1.02%</span>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 };
