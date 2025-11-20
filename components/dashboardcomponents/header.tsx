@@ -10,6 +10,16 @@ import { useAuth } from "@/contexts/AuthContext";
 const Header = () => {
   const { user, logout } = useAuth();
 
+  // Get user initials from first name and last name
+  const getInitials = () => {
+    if (!user?.firstName && !user?.lastName) {
+      return "U"; // Default to "U" for User if no name
+    }
+    const firstInitial = user?.firstName?.[0]?.toUpperCase() || "";
+    const lastInitial = user?.lastName?.[0]?.toUpperCase() || "";
+    return `${firstInitial}${lastInitial}` || "U";
+  };
+
   return (
     <header className="flex justify-between items-center py-5">
       <motion.div
@@ -29,8 +39,21 @@ const Header = () => {
           <motion.div
             whileHover={{ scale: 1.1 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            className="relative w-[60px] h-[60px] rounded-full overflow-hidden bg-[#212A38] flex items-center justify-center border-2 border-[#384051]"
           >
-            <Image src="/avatar.png" alt="Avatar" width={60} height={60} />
+            {user?.avatarUrl ? (
+              <Image
+                src={user.avatarUrl}
+                alt="Avatar"
+                width={60}
+                height={60}
+                className="object-cover"
+              />
+            ) : (
+              <span className="text-white text-xl font-semibold">
+                {getInitials()}
+              </span>
+            )}
           </motion.div>
           <div className="flex flex-col gap-2">
             <div className="text-white text-base font-medium">

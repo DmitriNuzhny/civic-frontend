@@ -4,10 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { showToast } from "@/lib/toast";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,12 +37,36 @@ const itemVariants = {
 
 const CongratulationsPage = () => {
   const router = useRouter();
+  const { user, isInitializing } = useAuth();
+
+  useEffect(() => {
+    if (isInitializing) {
+      return;
+    }
+
+    // If user already has wallet AND is KYC verified, redirect to dashboard
+    if (user?.walletAddress && user?.isKYCVerified) {
+      router.replace("/dashboard");
+    }
+  }, [user?.walletAddress, user?.isKYCVerified, isInitializing, router]);
 
   const handleConnectWallet = () => {
+    // Check KYC status before allowing wallet connection
+    if (!user?.isKYCVerified) {
+      showToast.error("Please complete KYC verification first.");
+      router.push("/kyc-verification");
+      return;
+    }
     router.push("/connect-wallet");
   };
 
   const handleCreateWallet = () => {
+    // Check KYC status before allowing wallet creation
+    if (!user?.isKYCVerified) {
+      showToast.error("Please complete KYC verification first.");
+      router.push("/kyc-verification");
+      return;
+    }
     router.push("/create-wallet");
   };
 

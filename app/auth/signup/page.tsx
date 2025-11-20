@@ -95,7 +95,7 @@ const SignupPage = () => {
 
     try {
       await signup(firstName.trim(), lastName.trim(), email, password);
-      router.push("/verify-email");
+      router.push("/auth/verify-email");
     } catch (error) {
       console.error("Signup failed:", error);
     }
@@ -273,20 +273,6 @@ const SignupPage = () => {
                 transition={{ duration: 0.5, delay: 0.7 }}
               >
                 <motion.div
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    onClick={handleSubmit}
-                    type="submit"
-                    disabled={isLoading}
-                    className="w-full bg-[#212A38] hover:bg-[#212A38]/80 border-[#384051] border text-[#0FE2D4] font-semibold text-base px-8 py-3 rounded-lg h-12 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? "Creating Account..." : "Create an Account"}
-                  </Button>
-                </motion.div>
-
-                <motion.div
                   className="flex items-center gap-2"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -318,6 +304,19 @@ const SignupPage = () => {
                       Privacy Policy
                     </Link>
                   </label>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    onClick={handleSubmit}
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full bg-[#212A38] hover:bg-[#212A38]/80 border-[#384051] border text-[#0FE2D4] font-semibold text-base px-8 py-3 rounded-lg h-12 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? "Creating Account..." : "Create an Account"}
+                  </Button>
                 </motion.div>
               </motion.div>
             </motion.form>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -40,7 +40,27 @@ const itemVariants = {
 
 type VerificationStatus = "idle" | "verifying" | "success" | "error";
 
-const VerifyEmailPage = () => {
+const VerifyEmailFallback = () => (
+  <div className="min-h-screen bg-[#030714] flex flex-col gap-10 items-center justify-center p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-[640px]"
+    >
+      <Card className="w-full bg-[#0D111D] border-[#212A38] lg:px-[60px] lg:py-10 px-4 py-6 flex flex-col gap-10">
+        <CardHeader className="text-center flex flex-col gap-6 items-center">
+          <Image src="/logo.svg" alt="CivicForge" width={192} height={32} />
+          <p className="text-white text-2xl font-semibold">
+            Preparing verification details...
+          </p>
+        </CardHeader>
+      </Card>
+    </motion.div>
+  </div>
+);
+
+const VerifyEmailContent = () => {
   const searchParams = useSearchParams();
   const { verifyEmail, resendVerificationEmail, isLoading } = useAuth();
 
@@ -295,5 +315,11 @@ const VerifyEmailPage = () => {
     </motion.div>
   );
 };
+
+const VerifyEmailPage = () => (
+  <Suspense fallback={<VerifyEmailFallback />}>
+    <VerifyEmailContent />
+  </Suspense>
+);
 
 export default VerifyEmailPage;

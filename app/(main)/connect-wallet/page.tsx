@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useAppKitWallet } from "@reown/appkit-wallet-button/react";
+import type { Wallet as AppKitWallet } from "@reown/appkit-wallet-button";
 
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -13,7 +16,10 @@ import { PhantomIcon } from "@/components/icons/walletIcons/phantom";
 import { CoinbaseIcon } from "@/components/icons/walletIcons/coinbase";
 import { TrustIcon } from "@/components/icons/walletIcons/trustIcon";
 import { useWallet } from "@/contexts/WalletContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiClient } from "@/lib/api";
 import { showToast } from "@/lib/toast";
+import toast from "@/lib/toast";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -38,59 +44,152 @@ const itemVariants = {
   },
 };
 
+type WalletOption = {
+  id: AppKitWallet;
+  name: string;
+  icon: ReactNode;
+};
+
+const walletOptions: WalletOption[] = [
+  {
+    id: "metamask",
+    name: "Metamask",
+    icon: <MetaIcon className="h-10! w-10!" />,
+  },
+  {
+    id: "phantom",
+    name: "Phantom",
+    icon: <PhantomIcon className="h-10! w-10!" />,
+  },
+  {
+    id: "trust",
+    name: "Trust",
+    icon: <TrustIcon className="h-10! w-10!" />,
+  },
+  {
+    id: "coinbase",
+    name: "Coinbase",
+    icon: <CoinbaseIcon className="h-10! w-10!" />,
+  },
+];
+
 const ConnectWalletPage = () => {
   const router = useRouter();
-  const { setWalletAddress } = useWallet();
-  const wallets = [
-    {
-      name: "Metamask",
-      icon: <MetaIcon className="h-10! w-10!" />,
-      onClick: () => {
-        showToast.loading("Connecting to Metamask...");
-        setTimeout(() => {
-          setWalletAddress("0xfe871316945fDF63bb6EDa2da6541A85A1ea7d3b");
-          showToast.success("Metamask wallet connected successfully!");
-          router.push("/dashboard");
-        }, 1500);
-      },
+  const { walletAddress, setWalletAddress } = useWallet();
+  const { user, isInitializing, refreshSession } = useAuth();
+
+  useEffect(() => {
+    if (isInitializing) {
+      return;
+    }
+
+    // Check if user has wallet already
+    if (user?.walletAddress || walletAddress) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    // Check if user is KYC verified
+    if (user && !user.isKYCVerified) {
+      showToast.error("KYC verification is required to connect a wallet.");
+      router.replace("/kyc-verification");
+    }
+  }, [user?.walletAddress, user?.isKYCVerified, walletAddress, isInitializing, router]);
+
+  const [pendingWallet, setPendingWallet] = useState<AppKitWallet | null>(null);
+  const toastIdRef = useRef<string | null>(null);
+  const pendingWalletRef = useRef<WalletOption | null>(null);
+
+  const { connect, isPending } = useAppKitWallet({
+    namespace: "eip155",
+    onSuccess: async (account) => {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+        toastIdRef.current = null;
+      }
+
+      const walletOption = pendingWalletRef.current;
+      pendingWalletRef.current = null;
+      setPendingWallet(null);
+
+      const walletAddress = account.address;
+
+      if (!walletAddress) {
+        showToast.error("No wallet address returned by the wallet.");
+        return;
+      }
+
+      try {
+        await apiClient.patch("/user/wallet", {
+          walletAddress,
+        });
+
+        const session = await refreshSession();
+        if (!session) {
+          showToast.error("Session expired. Please sign in again.");
+          router.push("/auth/login");
+          return;
+        }
+
+        setWalletAddress(session.user.walletAddress ?? walletAddress);
+        showToast.success(
+          walletOption
+            ? `${walletOption.name} connected successfully!`
+            : "Wallet connected successfully!"
+        );
+        router.push("/dashboard");
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to save wallet address.";
+        showToast.error(message);
+      }
     },
-    {
-      name: "Phantom",
-      icon: <PhantomIcon className="h-10! w-10!" />,
-      onClick: () => {
-        showToast.loading("Connecting to Phantom...");
-        setTimeout(() => {
-          setWalletAddress("0xfe871316945fDF63bb6EDa2da6541A85A1ea7d3b");
-          showToast.success("Phantom wallet connected successfully!");
-          router.push("/dashboard");
-        }, 1500);
-      },
+    onError: (error) => {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+        toastIdRef.current = null;
+      }
+      pendingWalletRef.current = null;
+      setPendingWallet(null);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to connect wallet. Please try again.";
+      showToast.error(message);
     },
-    {
-      name: "Trust",
-      icon: <TrustIcon className="h-10! w-10!" />,
-      onClick: () => {
-        showToast.loading("Connecting to Trust Wallet...");
-        setTimeout(() => {
-          setWalletAddress("0xfe871316945fDF63bb6EDa2da6541A85A1ea7d3b");
-          showToast.success("Trust Wallet connected successfully!");
-          router.push("/dashboard");
-        }, 1500);
-      },
-    },
-    {
-      name: "Coinbase",
-      icon: <CoinbaseIcon className="h-10! w-10!" />,
-      onClick: () => {
-        showToast.loading("Connecting to Coinbase Wallet...");
-        setTimeout(() => {
-          setWalletAddress("0xfe871316945fDF63bb6EDa2da6541A85A1ea7d3b");
-          showToast.success("Coinbase Wallet connected successfully!");
-          router.push("/dashboard");
-        }, 1500);
-      },
-    },
-  ];
+  });
+
+  const handleConnect = async (wallet: WalletOption) => {
+    if (isPending || pendingWallet) {
+      return;
+    }
+
+    pendingWalletRef.current = wallet;
+    setPendingWallet(wallet.id);
+    toastIdRef.current = showToast.loading(
+      `Connecting to ${wallet.name} wallet...`
+    );
+
+    try {
+      await connect(wallet.id);
+    } catch (error) {
+      if (toastIdRef.current) {
+        toast.dismiss(toastIdRef.current);
+        toastIdRef.current = null;
+      }
+      pendingWalletRef.current = null;
+      setPendingWallet(null);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : `Failed to connect to ${wallet.name}. Please try again.`;
+      showToast.error(message);
+    }
+  };
 
   return (
     <motion.div
@@ -138,35 +237,45 @@ const ConnectWalletPage = () => {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}
             >
-              {wallets.map((wallet, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
-                  whileHover={{ scale: 1.02, x: 5 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  <Button
-                    variant="outline"
-                    onClick={wallet.onClick}
-                    className="w-full bg-[#212A38] hover:bg-[#212A38]/80 border-[#384051] text-white h-16 rounded-lg transition-colors justify-start px-6 cursor-pointer"
+              {walletOptions.map((wallet, index) => {
+                const isWalletPending =
+                  pendingWallet === wallet.id && isPending;
+                const isDisabled =
+                  isPending &&
+                  pendingWallet !== null &&
+                  pendingWallet !== wallet.id;
+
+                return (
+                  <motion.div
+                    key={wallet.id}
+                    initial={{ opacity: 0, x: -30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.4, delay: 0.6 + index * 0.1 }}
+                    whileHover={{ scale: 1.02, x: 5 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <div className="flex items-center gap-6">
-                      <motion.div
-                        className="flex items-center justify-center"
-                        whileHover={{ rotate: 5 }}
-                        transition={{ type: "spring", stiffness: 300 }}
-                      >
-                        {wallet.icon}
-                      </motion.div>
-                      <span className="text-white text-base font-medium">
-                        {wallet.name}
-                      </span>
-                    </div>
-                  </Button>
-                </motion.div>
-              ))}
+                    <Button
+                      variant="outline"
+                      onClick={() => handleConnect(wallet)}
+                      disabled={isWalletPending || isDisabled}
+                      className="w-full bg-[#212A38] hover:bg-[#212A38]/80 border-[#384051] text-white h-16 rounded-lg transition-colors justify-start px-6 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <div className="flex items-center gap-6">
+                        <motion.div
+                          className="flex items-center justify-center"
+                          whileHover={{ rotate: 5 }}
+                          transition={{ type: "spring", stiffness: 300 }}
+                        >
+                          {wallet.icon}
+                        </motion.div>
+                        <span className="text-white text-base font-medium">
+                          {isWalletPending ? "Connecting..." : wallet.name}
+                        </span>
+                      </div>
+                    </Button>
+                  </motion.div>
+                );
+              })}
             </motion.div>
 
             <motion.div

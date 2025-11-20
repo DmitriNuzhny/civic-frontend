@@ -12,6 +12,7 @@ interface AuthResponse {
     isEmailVerified: boolean;
     isKYCVerified: boolean;
     walletAddress?: string;
+    avatarUrl?: string | null;
     createdAt: string;
   };
 }

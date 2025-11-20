@@ -7,9 +7,11 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import { useDisconnect } from "wagmi";
+
+import { useWallet } from "@/contexts/WalletContext";
 import { showToast } from "@/lib/toast";
 import { apiClient } from "@/lib/api";
-import { useWallet } from "@/contexts/WalletContext";
 
 interface User {
   id: string;
@@ -19,6 +21,7 @@ interface User {
   isEmailVerified: boolean;
   isKYCVerified: boolean;
   walletAddress?: string;
+  avatarUrl?: string | null;
   createdAt: string;
 }
 
@@ -53,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   const { setWalletAddress } = useWallet();
+  const { disconnect } = useDisconnect();
 
   useEffect(() => {
     apiClient.setUnauthorizedHandler(() => {
@@ -84,7 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (accessToken) {
         try {
           const response = await apiClient.get<{ user: User }>("/auth/me");
-          setUser(response.user);
+          setUser(response.user as User);
           setWalletAddress(response.user.walletAddress ?? null);
         } catch (error) {
           // Token is invalid or expired, clear it
@@ -208,6 +212,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
+    try {
+      disconnect();
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to disconnect wallet";
+      console.error("Wallet disconnect error:", message);
+    }
+
     apiClient.clearTokens();
     setUser(null);
     setWalletAddress(null);

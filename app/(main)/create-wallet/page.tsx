@@ -67,8 +67,27 @@ const slideVariants = {
 const CreateWalletPage = () => {
   const router = useRouter();
   const { setWalletAddress } = useWallet();
-  const { refreshSession } = useAuth();
+  const { user, isInitializing, refreshSession } = useAuth();
   const qrCodeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (isInitializing) {
+      return;
+    }
+
+    // Check if user has wallet already
+    if (user?.walletAddress) {
+      router.replace("/dashboard");
+      return;
+    }
+
+    // Check if user is KYC verified
+    if (user && !user.isKYCVerified) {
+      showToast.error("KYC verification is required to create a wallet.");
+      router.replace("/kyc-verification");
+    }
+  }, [user?.walletAddress, user?.isKYCVerified, isInitializing, router]);
+
   const createWalletData = () => {
     const wallet = Wallet.createRandom();
     const phrase = wallet.mnemonic?.phrase;

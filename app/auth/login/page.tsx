@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -44,10 +44,26 @@ const itemVariants = {
 
 const LoginPage = () => {
   const router = useRouter();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user, isInitializing } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const hasRedirectedRef = useRef(false);
+
+  // Handle redirect after successful login or if user is already logged in
+  useEffect(() => {
+    // Don't redirect if still initializing
+    if (isInitializing) {
+      return;
+    }
+
+    // If user is logged in (either just logged in or already was logged in)
+    // Always redirect to congratulation page first
+    if (user && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      router.push("/congratulation");
+    }
+  }, [user, isInitializing, router]);
 
   const handleGoogleAuth = () => {
     window.location.href = `${API_BASE_URL}/auth/google`;
@@ -69,10 +85,12 @@ const LoginPage = () => {
     }
 
     try {
+      hasRedirectedRef.current = false; // Reset redirect flag before login
       await login(email, password);
-      router.push("/congratulation");
+      // Redirect will be handled by useEffect when user state updates
     } catch (error) {
       console.error("Login failed:", error);
+      hasRedirectedRef.current = false; // Reset on error so user can try again
     }
   };
 

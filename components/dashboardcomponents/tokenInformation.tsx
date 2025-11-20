@@ -8,15 +8,19 @@ import { LineChart } from "recharts";
 import { CartesianGrid } from "recharts";
 import { XAxis } from "recharts";
 import { YAxis } from "recharts";
-import { Tooltip } from "recharts";
+import { Tooltip as RechartsTooltip } from "recharts";
 import { Line } from "recharts";
 import { Area } from "recharts";
 import { ReferenceDot } from "recharts";
 import { Button } from "../ui/button";
+import { Tooltip } from "../ui/tooltip";
+import { useAuth } from "@/contexts/AuthContext";
 
 const TokenInformation = () => {
   const [timeFilter, setTimeFilter] = useState("Live");
   const router = useRouter();
+  const { user } = useAuth();
+  const hasWallet = !!user?.walletAddress;
 
   // Token price chart data
   const tokenChartData = [
@@ -165,15 +169,31 @@ const TokenInformation = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 1.1 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={hasWallet ? { scale: 1.05 } : {}}
+            whileTap={hasWallet ? { scale: 0.95 } : {}}
           >
-            <Button
-              onClick={() => router.push("/buy-token")}
-              className="px-6 py-3 bg-[#0FE2D4] text-black rounded font-bold hover:bg-[#0FE2D4]/80 transition-colors shadow-lg shadow-[#0FE2D4]/20 hover:shadow-[#0FE2D4]/40"
-            >
-              Buy CF Tokens
-            </Button>
+            {!hasWallet ? (
+              <Tooltip
+                content="Connect or create wallet to buy tokens"
+                position="top"
+              >
+                <Button
+                  onClick={() => hasWallet && router.push("/buy-token")}
+                  disabled={!hasWallet}
+                  className="px-6 py-3 bg-[#0FE2D4] text-black rounded font-bold hover:bg-[#0FE2D4]/80 transition-colors shadow-lg shadow-[#0FE2D4]/20 hover:shadow-[#0FE2D4]/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#0FE2D4] disabled:hover:shadow-[#0FE2D4]/20"
+                >
+                  Buy CF Tokens
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                onClick={() => hasWallet && router.push("/buy-token")}
+                disabled={!hasWallet}
+                className="px-6 py-3 bg-[#0FE2D4] text-black rounded font-bold hover:bg-[#0FE2D4]/80 transition-colors shadow-lg shadow-[#0FE2D4]/20 hover:shadow-[#0FE2D4]/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#0FE2D4] disabled:hover:shadow-[#0FE2D4]/20"
+              >
+                Buy CF Tokens
+              </Button>
+            )}
           </motion.div>
         </div>
         <motion.div
@@ -258,7 +278,7 @@ const TokenInformation = () => {
                 fontSize: 18,
               }}
             />
-            <Tooltip
+            <RechartsTooltip
               contentStyle={{
                 backgroundColor: "#0D111D",
                 borderColor: "#384051",
